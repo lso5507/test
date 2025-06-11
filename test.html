@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>CORS 테스트 클라이언트</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    textarea { width: 100%; height: 200px; margin-top: 10px; }
+    input[type="text"], input[type="password"] { width: 100%; }
+    button { margin-top: 10px; }
+  </style>
+</head>
+<body>
+
+  <h2>1️⃣ 로그인 요청</h2>
+
+  <label>로그인 요청 URL:</label><br>
+  <input type="text" id="login-url" value="http://localhost:18080/user/login"><br><br>
+
+  <label>Username:</label><br>
+  <input type="text" id="username" value="leeseokwoon"><br><br>
+
+  <label>Password:</label><br>
+  <input type="password" id="password" value="password123"><br><br>
+
+  <button id="send-login">로그인 요청 보내기</button>
+
+  <h3>응답 결과 (로그인)</h3>
+  <textarea id="login-result" readonly></textarea>
+
+  <hr>
+
+  <h2>2️⃣ 멤버 목록 요청</h2>
+
+  <label>멤버 API 요청 URL:</label><br>
+  <input type="text" id="members-url" value="http://localhost:18080/api/members?offset=0&limit=5"><br><br>
+
+  <button id="get-members">멤버 목록 요청 보내기</button>
+
+  <h3>응답 결과 (멤버 목록)</h3>
+  <textarea id="members-result" readonly></textarea>
+
+  <script>
+    // 로그인 요청 처리
+    document.getElementById("send-login").addEventListener("click", async () => {
+      const url = document.getElementById("login-url").value.trim();
+      const username = document.getElementById("username").value;
+      const password = document.getElementById("password").value;
+      const resultArea = document.getElementById("login-result");
+
+      resultArea.value = "요청 중...";
+
+      try {
+        const response = await fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ username, password }),
+          credentials: "include"
+        });
+
+        const headers = Array.from(response.headers.entries())
+          .map(([k, v]) => `${k}: ${v}`)
+          .join("\n");
+
+        const bodyText = await response.text();
+
+        resultArea.value = `📌 상태 코드: ${response.status} ${response.statusText}\n\n📋 응답 헤더:\n${headers}\n\n📦 응답 본문:\n${bodyText}`;
+      } catch (err) {
+        resultArea.value = `❌ 요청 실패: ${err}`;
+      }
+    });
+
+    // 멤버 조회 요청 처리
+    document.getElementById("get-members").addEventListener("click", async () => {
+      const url = document.getElementById("members-url").value.trim();
+      const resultArea = document.getElementById("members-result");
+
+      resultArea.value = "요청 중...";
+
+      try {
+        const response = await fetch(url, {
+          method: "GET",
+          credentials: "include"
+        });
+
+        const headers = Array.from(response.headers.entries())
+          .map(([k, v]) => `${k}: ${v}`)
+          .join("\n");
+
+        const bodyText = await response.text();
+
+        resultArea.value = `📌 상태 코드: ${response.status} ${response.statusText}\n\n📋 응답 헤더:\n${headers}\n\n📦 응답 본문:\n${bodyText}`;
+      } catch (err) {
+        resultArea.value = `❌ 요청 실패: ${err}`;
+      }
+    });
+  </script>
+
+</body>
+</html>
